@@ -90,6 +90,9 @@ var plusCodec;
 
 var stbyTriggeredHere=false;
 
+var proInCall=false;
+var plusInCall=false;
+
 //Run your init script asynchronously 
 async function init_intercodec() {
   try {
@@ -225,7 +228,14 @@ GMM.Event.Receiver.on(event => {
                       //Update the custom panel toggle switch
                       evalCustomPanels();
                     break;
-                     
+                    case 'CALL_CONNECTED':
+                      plusInCall=true;
+                      evalCustomPanels();
+                    break;
+                    case 'CALL_DISCONNECTED':
+                      plusInCall=false;
+                      evalCustomPanels();
+                    break;                   
                     default:
                     break;
                   }
@@ -249,11 +259,20 @@ GMM.Event.Receiver.on(event => {
 /////////////////////////////////////////////////////////////////////////////////////////
 
 function sendIntercodecMessage(message) { 
-  if (plusCodec!='') plusCodec.status(message).post().catch(e=>{
+  if (plusCodec!='') plusCodec.status(message).queue().catch(e=>{
     console.log('Error sending message');
     alertFailedIntercodecComm("Error connecting to Codec Plus, please contact the Administrator");
   });
 }
+
+GMM.Event.Queue.on(report => {
+  //The queue will continuously log a report to the console, even when it's empty.
+  //To avoid additional messages, we can filter the Queues Remaining Requests and avoid it if it's equal to Empty
+  if (report.QueueStatus.RemainingRequests != 'Empty') {
+    report.Response.Headers = [] // Clearing Header response for the simplicity of the demo, you may need this info
+    //console.log(report)
+  }
+});
 
 function alertFailedIntercodecComm(message) {
   xapi.command("UserInterface Message Alert Display", {
@@ -265,17 +284,59 @@ function alertFailedIntercodecComm(message) {
 
 function evalCustomPanels() {
     // then create the toggle based custom panel
-    xapi.Command.UserInterface.Extensions.Panel.Save({ PanelId: 'panel_change_mode' },
-      PANEL_panel_change_mode);
-    if (presentationMode) {
-      xapi.command('UserInterface Extensions Widget SetValue', {WidgetId: 'widget_select_mode', Value: '1'});
+    if (proInCall || plusInCall) {
+      xapi.Command.UserInterface.Extensions.Panel.Remove({ PanelId: 'panel_change_mode' });
     }
-    else
-    {
-      xapi.command('UserInterface Extensions Widget SetValue', {WidgetId: 'widget_select_mode' , Value: '2'});
-    }
-
+    else {
+      xapi.Command.UserInterface.Extensions.Panel.Save({ PanelId: 'panel_change_mode' },
+        PANEL_panel_change_mode);
+      if (presentationMode) {
+        xapi.command('UserInterface Extensions Widget SetValue', {WidgetId: 'widget_select_mode', Value: '1'});
+      }
+      else
+      {
+        xapi.command('UserInterface Extensions Widget SetValue', {WidgetId: 'widget_select_mode' , Value: '2'});
+      }
+  }
 }
+
+
+// register handler for Call Successful
+xapi.Event.CallSuccessful.on(async () => {
+  console.log("call connected...");
+  // always tell the other codec when your are in or out of a call
+  sendIntercodecMessage('CALL_CONNECTED');
+  proInCall=true;
+  evalCustomPanels();
+});
+
+// register handler for Call Disconnect
+xapi.Event.CallDisconnect.on(async () => {
+  // always tell the other codec when your are in or out of a call
+  sendIntercodecMessage('CALL_DISCONNECTED');
+  proInCall=false;
+  evalCustomPanels();
+});
+
+// register WebRTC Mode call tracker
+xapi.Status.UserInterface.WebView.Type
+.on(async(value) => {
+  if (value==='WebRTCMeeting') {
+    // always tell the other codec when your are in or out of a call
+    sendIntercodecMessage('CALL_CONNECTED');
+    proInCall=true;
+    evalCustomPanels();
+  } else {
+    // always tell the other codec when your are in or out of a call
+    sendIntercodecMessage('CALL_DISCONNECTED');
+    proInCall=false;
+    evalCustomPanels();
+  }
+});
+
+
+
+
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // INITIALIZATION
