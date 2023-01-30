@@ -96,6 +96,8 @@ var stbyTriggeredHere=false;
 var proInCall=false;
 var plusInCall=false;
 
+var isProPresenting=false;
+
 //Run your init script asynchronously 
 async function init_intercodec() {
   try {
@@ -382,6 +384,13 @@ function listenToStandby() {
           }).catch((error) => { console.error(error); });
         } else if (stbyTriggeredHere) stbyTriggeredHere=false;
     } 
+    else if (isProPresenting) {
+      if (state=='Standby' || state =='Halfwake')
+      {
+        xapi.Command.Standby.Deactivate();
+      }
+
+    }
   });
 }
 
@@ -427,11 +436,14 @@ function handleProStartPresenting(){ // this is all within Presentation mode
  xapi.Command.Video.Matrix.Assign({ Output: 1,  SourceId: 2 }); 
  // exit halfwake mode
  xapi.Command.Standby.Deactivate();
+ isProPresenting=true;
 }
 
 function handleProStopPresenting(){ // this is all within Presentation mode
  //go to Halfwake mode, so the screen is blank.
+ isProPresenting=false;
  xapi.Command.Standby.Halfwake();
+
 }
 
 

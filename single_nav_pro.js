@@ -478,12 +478,29 @@ xapi.Event.PresentationStarted.on(value => {
   }
 });
 
+
+xapi.Event.PresentationPreviewStarted.on(value => {
+  console.log(value)
+  if (presentationMode) {
+    sendIntercodecMessage('STARTED_PRESENTING');
+  }
+});
+
+
 xapi.Event.PresentationStopped.on(value => {
   console.log(value);
   if (presentationMode) {
     sendIntercodecMessage('STOPPED_PRESENTING');
   }
 });
+
+xapi.Event.PresentationPreviewStopped.on(value => {
+  console.log(value);
+  if (presentationMode) {
+    sendIntercodecMessage('STOPPED_PRESENTING');
+  }
+});
+
 
 function switchToPresentationMode(sendNotification) {
   console.log('Switch to presentation mode....');
