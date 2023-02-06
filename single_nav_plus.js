@@ -43,6 +43,8 @@ const strPresWelcomMsg='Welcome to Meeting Mode. Please sit facing the 90 inch s
 const welcomeDisplayDelay=5000; //in milliseconds
 const touchSetMinDelay=2000; // milliseconds
 
+const useProactiveMeetingJoin=true;
+
 /*
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 + DO NOT EDIT ANYTHING BELOW THIS LINE                                  +
@@ -406,6 +408,9 @@ async function plusPresentationMode() {
     console.log('Your software version does not support this configuration.  Please install ‘Custom Wallpaper’ on the codec in order to prevent Halfwake mode from occurring.');
     console.error(error);
   });
+  // manage proactive join mode
+  xapi.Config.UserInterface.Assistant.ProactiveMeetingJoin.set('False');
+
   // route HDMI input 2 to the display (using the video matrix).
   xapi.Command.Video.Matrix.Reset();
   xapi.Command.Video.Matrix.Assign({ Output: 1,  SourceId: 2 }); 
@@ -427,7 +432,8 @@ async function plusStandardMode() {
   // wake up codec
   stbyTriggeredHere=true;
   xapi.Command.Standby.Deactivate();
-
+  // manager proactive join mode
+  if (useProactiveMeetingJoin) xapi.Config.UserInterface.Assistant.ProactiveMeetingJoin.set('True');
 }
 
 function handleProStartPresenting(){ // this is all within Presentation mode

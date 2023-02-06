@@ -81,7 +81,7 @@ const strPresWelcomMsg =
   "Welcome to Meeting Mode. Please sit facing the 90 inch screen on the short wall";
 ```
 
-7.Depending on how long it takes the ethernet switcher to connect the single Navigator in the room to one Codec or the other the following constants might need to be modified to reduce the chances of getting Touch Device detection errors or overlapping messages on the Navigator device:
+7. Depending on how long it takes the ethernet switcher to connect the single Navigator in the room to one Codec or the other the following constants might need to be modified to reduce the chances of getting Touch Device detection errors or overlapping messages on the Navigator device:
 
 ```js
 const welcomeDisplayDelay = 5000; //in milliseconds
@@ -95,7 +95,13 @@ The `touchSetMinDelay` constant in particular determines how to long to wait to 
 
 9. Also on the Codec Pro, wire GPIO Pin 1 to the corresponding pin in the Ethernet A/B switch controller that will switch the Navigator Ethernet port to the Codec Plus (Standard Mode).
 
-10. If you wish to use the USB Mode v3 macro for USB passthru , install the USB_Mode_Version_3.js macro onto the codec(s) you wish to use it with.
+10. The Proactive Meeting Join feature interferes with this macro since it might prompt users to join a meeting on the screen of the inactive codec. The macro on both codecs will turn the feature on and off as needed, so you need to specify if you wish to enable that feature on the active codec according to the mode or leave it off by setting the `useProactiveMeetingJoin` constant to True or False on both macros:
+
+```
+const useProactiveMeetingJoin='True';
+```
+
+11. If you wish to use the USB Mode v3 macro for USB passthru , install the USB_Mode_Version_3.js macro onto the codec(s) you wish to use it with.
 
 Here is a summary of each macro in this repository:
 

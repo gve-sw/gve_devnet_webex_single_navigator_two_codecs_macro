@@ -42,6 +42,10 @@ const strPresWelcomMsg='Welcome to Townhall Mode. Please face the West wall'
 const welcomeDisplayDelay=5000; //in milliseconds
 const touchSetMinDelay=2000; // in milliseconds
 const activateStandbyDelay=5000; // in milliseconds
+
+const useProactiveMeetingJoin='True'; 
+
+
 /*
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 + DO NOT EDIT ANYTHING BELOW THIS LINE                                  +
@@ -445,6 +449,9 @@ async function proPresentationMode()
   // wake up codec
   stbyTriggeredHere=true;
   xapi.Command.Standby.Deactivate();
+  // manager proactive join mode
+  if (useProactiveMeetingJoin) xapi.Config.UserInterface.Assistant.ProactiveMeetingJoin.set('True');
+
  }
 
  async function proStandardMode()  
@@ -452,10 +459,14 @@ async function proPresentationMode()
   console.log("Setting up Standard Mode in Codec Pro");
   // Turn ultrasound volume down to 0
   await xapi.Config.Audio.Ultrasound.MaxVolume.set(0);
+
+  // manage proactive join mode
+  xapi.Config.UserInterface.Assistant.ProactiveMeetingJoin.set('False');
   // Set DND
   xapi.Command.Conference.DoNotDisturb.Activate();
   // wake up codec with a delay to give chance to clear out any missing Navigator warnings
   setTimeout(function(){xapi.Command.Standby.Activate();}, activateStandbyDelay);
+
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
